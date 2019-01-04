@@ -22,14 +22,19 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 
 	pb "github.com/rajeshpachar/grpc-go-sample/greeter"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
+// here is client for health prob.
+// https://github.com/grpc-ecosystem/grpc-health-probe/blob/master/main.go
 const (
 	port = ":5555"
 )
@@ -42,10 +47,17 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	return &pb.HelloReply{Response: "Hello my name is: " + in.Name}, nil
 }
 
-func (s *server) Check(ctx context.Context, in *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
+func (s *server) Check(ctx context.Context, in *healthpb.HealthCheckRequest) (*healthpb.HealthCheckResponse, error) {
 	log.Println("health check received for  " + in.Service)
-	return nil, &pb.HealthCheckResponse{Status : pb.HealthCheckResponse_SERVING}
+	return &healthpb.HealthCheckResponse{Status: healthpb.HealthCheckResponse_SERVING}, nil
 }
+
+// func (s *server) Watch(ctx context.Context, in *healthpb.HealthCheckRequest) (*healthpb.Health_WatchClient, error) {
+// 	log.Println("health check received for  " + in.Service)
+// 	return &healthpb.Health_WatchClient{Status: healthpb.HealthCheckResponse_SERVING}, nil
+// }
+
+// Watch(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (Health_WatchClient, error)
 
 // SayHello implements helloworld.GreeterServer
 // func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
@@ -59,8 +71,10 @@ func main() {
 	}
 	s := grpc.NewServer()
 	pb.RegisterGreeterServer(s, &server{})
+	healthpb.RegisterHealthServer(s, &server{})
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
+	fmt.Println("now starting up server")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
