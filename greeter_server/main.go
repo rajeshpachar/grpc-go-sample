@@ -71,7 +71,7 @@ func main() {
 	}
 	s := grpc.NewServer()
 	pb.RegisterGreeterServer(s, &server{})
-	healthpb.RegisterHealthServer(s, &server{})
+	// healthpb.RegisterHealthServer(s, &server{})
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
 	fmt.Println("now starting up server")
