@@ -26,6 +26,7 @@ import (
 	"log"
 	"net"
 
+	ptypes "github.com/golang/protobuf/ptypes"
 	pb "github.com/rajeshpachar/grpc-go-sample/greeter"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
@@ -44,6 +45,19 @@ type server struct{}
 
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	log.Println("receiver reque from client " + in.Name)
+	log.Println("receiver reque from client Details ", in.Details)
+	for _, v := range in.Details {
+		// var person *pb.Person = &pb.Person{}
+		person := &pb.Person{}
+		if ptypes.Is(v, person) {
+			err := ptypes.UnmarshalAny(v, person)
+			if err != nil {
+				fmt.Println("data unmarshal err ", err)
+				continue
+			}
+			fmt.Println("here is person data unmarshal ", person)
+		}
+	}
 	return &pb.HelloReply{Response: "Hello my name is: " + in.Name}, nil
 }
 

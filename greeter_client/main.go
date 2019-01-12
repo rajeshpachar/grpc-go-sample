@@ -24,6 +24,8 @@ import (
 	"os"
 	"time"
 
+	ptypes "github.com/golang/protobuf/ptypes"
+	any "github.com/golang/protobuf/ptypes/any"
 	pb "github.com/rajeshpachar/grpc-go-sample/greeter"
 	"google.golang.org/grpc"
 )
@@ -49,7 +51,22 @@ func main() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
+
+	person1 := &pb.Person{FirstName: "rajesh", LastName: "pachar"}
+	any1, err := ptypes.MarshalAny(person1)
+	person2 := &pb.Person{FirstName: "raj", LastName: "kumar"}
+	any2, err := ptypes.MarshalAny(person2)
+
+	persons := []*any.Any{any1, any2}
+
+	// any, err := ptypes.MarshalAny(persons)
+
+	log.Println("here is person data", persons)
+
+	r, err := c.SayHello(ctx, &pb.HelloRequest{
+		Name:    name,
+		Details: persons,
+	})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
