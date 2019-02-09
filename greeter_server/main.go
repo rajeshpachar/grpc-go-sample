@@ -49,13 +49,15 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	for _, v := range in.Details {
 		// var person *pb.Person = &pb.Person{}
 		person := &pb.Person{}
+		url := v.GetTypeUrl()
+		fmt.Println("type url is : ", url)
 		if ptypes.Is(v, person) {
 			err := ptypes.UnmarshalAny(v, person)
 			if err != nil {
 				fmt.Println("data unmarshal err ", err)
 				continue
 			}
-			fmt.Println("here is person data unmarshal ", person)
+			fmt.Println(person.FirstName+" "+person.LastName+": here is person data unmarshal ", person)
 		}
 	}
 	return &pb.HelloReply{Response: "Hello my name is: " + in.Name}, nil
